@@ -1,3 +1,4 @@
+#kevin ospina villada, juan jose toro y cristopher arboleda
 import random
 from abc import ABC, abstractmethod
 
