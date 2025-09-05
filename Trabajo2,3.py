@@ -1,3 +1,4 @@
+#kevin ospina villada
 # Función para extraer subcadenas según el tipo de carácter inicial
 def extraer_subcadenas(texto, tipo_caracter):
     letras_vocales = "aeiouAEIOU"
