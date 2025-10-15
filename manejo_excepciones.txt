@@ -1,0 +1,284 @@
+#!/usr/bin/env python3
+"""
+MANEJO DE EXCEPCIONES - EJEMPLOS CONFUSOS - Versión Interactiva (RESPONDIDO)
+Este código demuestra errores y confusiones comunes con el manejo de excepciones en Python.
+Responde las preguntas al final de cada ejemplo para reforzar el aprendizaje.
+"""
+
+import os
+import time
+
+def limpiar_pantalla():
+    """Limpia la pantalla de la terminal"""
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def esperar_enter():
+    """Espera a que el usuario presione Enter para continuar"""
+    input("\nPresiona Enter para continuar...")
+
+def imprimir_encabezado_seccion(titulo):
+    """Imprime un encabezado de sección formateado"""
+    print("\n" + "=" * 70)
+    print(f" {titulo}")
+    print("=" * 70 + "\n")
+
+# ===========================================================================
+# Problema 1: Capturar todo con except desnudo
+# ===========================================================================
+def problema_bare_except():
+    """Demuestra el problema con cláusulas except desnudas"""
+    limpiar_pantalla()
+    imprimir_encabezado_seccion("PROBLEMA 1: Capturando Todo con Except Desnudo")
+    
+    print("¿Qué está mal con este código?")
+    print("-" * 50)
+    print("""
+def dividir(a, b):
+    try:
+        resultado = a / b
+        return resultado
+    except:  # ¡Captura TODO, incluso KeyboardInterrupt!
+        print("Ocurrió un error")
+        return None
+    """)
+    
+    def dividir_malo(a, b):
+        try:
+            resultado = a / b
+            return resultado
+        except:
+            print("Ocurrió un error")
+            return None
+    
+    print("\nPrueba 1: dividir_malo(10, 2)")
+    resultado = dividir_malo(10, 2)
+    print(f"Resultado: {resultado}")
+    
+    print("\nPrueba 2: dividir_malo(10, 0)")
+    resultado = dividir_malo(10, 0)
+    print(f"Resultado: {resultado}")
+    
+    print("\n PROBLEMAS:")
+    print("- No sabemos QUÉ error ocurrió")
+    print("- Captura salidas del sistema e interrupciones de teclado")
+    print("- Hace la depuración muy difícil")
+    print("- Oculta bugs en el código")
+    
+    print("\n PREGUNTAS PARA PENSAR:")
+    print("1. ¿Cómo sabrías qué salió mal en producción?")
+    print("   R// Revisando el tipo de excepción usando 'except Exception as e:' y registrando el error.")
+    print("2. ¿Qué pasa si hay un error de tipeo en 'resultado'?")
+    print("   R// El except lo ocultará y solo mostrará 'Ocurrió un error', sin mostrar la causa real.")
+    print("3. ¿Cómo afecta esto a la depuración?")
+    print("   R// Dificulta la depuración porque no se sabe qué tipo de error ocurrió ni dónde.")
+    
+    esperar_enter()
+
+# ===========================================================================
+# Problema 2: Capturar demasiado ampliamente
+# ===========================================================================
+def problema_except_amplio():
+    """Demuestra el problema de capturar Exception demasiado ampliamente"""
+    limpiar_pantalla()
+    imprimir_encabezado_seccion("PROBLEMA 2: Capturando Demasiado Ampliamente")
+    
+    print("""
+def procesar_archivo(nombre_archivo):
+    try:
+        archivo = open(nombre_archivo, 'r')
+        datos = archivo.read()
+        archivo.close()
+        numeros = [int(x) for x in datos.split()]
+        promedio = sum(numeros) / len(numeros)
+        return promedio
+    except Exception as e:  # ¡Demasiado amplio!
+        print(f"Error: {e}")
+        return None
+    """)
+    
+    def procesar_archivo_malo(nombre_archivo, datos):
+        try:
+            numeros = [int(x) for x in datos.split()]
+            promedio = sum(numeros) / len(numeros)
+            return promedio
+        except Exception as e:
+            print(f"Error: {e}")
+            return None
+    
+    print("\nPruebas:")
+    procesar_archivo_malo("test.txt", "10 20 30")
+    procesar_archivo_malo("test.txt", "10 abc 30")
+    procesar_archivo_malo("test.txt", "")
+    
+    print("\n PREGUNTAS PARA PENSAR:")
+    print("1. ¿Qué tipos específicos de errores pueden ocurrir?")
+    print("   R// FileNotFoundError, ValueError, ZeroDivisionError, IOError, etc.")
+    print("2. ¿Deberían manejarse todos de la misma manera?")
+    print("   R// No, cada uno debe tratarse diferente (por ejemplo, mostrar mensaje distinto).")
+    print("3. ¿Qué información se pierde al capturar todo?")
+    print("   R// El tipo de error y la línea exacta del fallo, lo que dificulta encontrar la causa.")
+    
+    esperar_enter()
+
+# ===========================================================================
+# Problema 3: Ignorar errores silenciosamente
+# ===========================================================================
+def problema_ignorar_errores():
+    limpiar_pantalla()
+    imprimir_encabezado_seccion("PROBLEMA 3: Ignorando Errores Silenciosamente")
+    
+    print("""
+def guardar_configuracion(config):
+    try:
+        with open('config.txt', 'w') as archivo:
+            archivo.write(str(config))
+    except:
+        pass  # ¡El usuario no sabe que falló!
+    """)
+    
+    def guardar_config_malo(config, simular_error=False):
+        try:
+            if simular_error:
+                raise IOError("No hay permisos de escritura")
+            print(f"  [Guardando] {config}")
+            return True
+        except:
+            pass
+    
+    guardar_config_malo({"tema": "oscuro"}, False)
+    guardar_config_malo({"tema": "oscuro"}, True)
+    
+    print("\n PREGUNTAS PARA PENSAR:")
+    print("1. ¿Qué debería suceder cuando falla el guardado?")
+    print("   R// Mostrar mensaje de error o intentar guardar de nuevo.")
+    print("2. ¿Cómo informarías al usuario?")
+    print("   R// Con un mensaje como 'Error: no se pudo guardar la configuración'.")
+    print("3. ¿Es este error algo que deberías manejar?")
+    print("   R// Sí, pero no ignorarlo; debe registrarse o notificarse.")
+    
+    esperar_enter()
+
+# ===========================================================================
+# Problema 4: Confusión con else y finally
+# ===========================================================================
+def problema_else_finally():
+    limpiar_pantalla()
+    imprimir_encabezado_seccion("PROBLEMA 4: Confusión con Else y Finally")
+    
+    def operacion_confusa(tiene_error):
+        print(f"\n[Ejecutando con tiene_error={tiene_error}]")
+        try:
+            print("  1. En el bloque try")
+            if tiene_error:
+                raise ValueError("Error simulado")
+            print("  2. Try completado sin error")
+        except ValueError:
+            print("  2. En el bloque except")
+        else:
+            print("  3. En el bloque else")
+        finally:
+            print("  4. En el bloque finally")
+    
+    operacion_confusa(False)
+    operacion_confusa(True)
+    
+    print("\n PREGUNTAS PARA PENSAR:")
+    print("1. ¿En qué se diferencia else de finally?")
+    print("   R// else solo se ejecuta si NO hay excepción, finally siempre se ejecuta.")
+    print("2. ¿Cuándo usarías cada uno?")
+    print("   R// else: cuando el try se completa con éxito. finally: para liberar recursos.")
+    print("3. ¿Qué pasa si hay un return en try?")
+    print("   R// finally aún se ejecuta incluso después del return.")
+    
+    esperar_enter()
+
+# ===========================================================================
+# Problema 5: Uso incorrecto de raise
+# ===========================================================================
+def problema_raise_incorrecto():
+    limpiar_pantalla()
+    imprimir_encabezado_seccion("PROBLEMA 5: Uso Incorrecto de Raise")
+    
+    print("\n PREGUNTAS PARA PENSAR:")
+    print("1. ¿Qué tipo de excepción sería más apropiado?")
+    print("   R// ValueError, FileNotFoundError, TypeError, etc., según el contexto.")
+    print("2. ¿Qué información debería incluir el mensaje?")
+    print("   R// Explicación clara: 'Edad no puede ser negativa' o 'No se permite dividir por cero'.")
+    print("3. ¿Cómo ayuda esto a quien llama la función?")
+    print("   R// Le permite manejar el error específico y entender la causa.")
+    
+    esperar_enter()
+
+# ===========================================================================
+# Problema 6: No re-lanzar apropiadamente
+# ===========================================================================
+def problema_no_relanzar():
+    limpiar_pantalla()
+    imprimir_encabezado_seccion("PROBLEMA 6: No Re-lanzar Apropiadamente")
+    
+    print("\n PREGUNTAS PARA PENSAR:")
+    print("1. ¿Cuándo deberías capturar y manejar?")
+    print("   R// Cuando el error puede resolverse localmente (por ejemplo, reintentar conexión).")
+    print("2. ¿Cuándo deberías capturar, registrar y re-lanzar?")
+    print("   R// Cuando quieres dejar registro, pero permitir que otro nivel lo maneje.")
+    print("3. ¿Cuándo NO deberías capturar en absoluto?")
+    print("   R// Cuando no puedes hacer nada útil con el error o solo lo ocultarías.")
+    
+    esperar_enter()
+
+# ===========================================================================
+# Problema 7: Manejo de excepciones en bucles
+# ===========================================================================
+def problema_excepciones_en_bucles():
+    limpiar_pantalla()
+    imprimir_encabezado_seccion("PROBLEMA 7: Excepciones en Bucles")
+    
+    elementos = ["10", "20", "abc", "40", "xyz"]
+    
+    print("\n PREGUNTAS PARA PENSAR:")
+    print("1. ¿Debería un error detener todo el proceso?")
+    print("   R// No necesariamente; es mejor continuar procesando los demás.")
+    print("2. ¿Cómo reportarías múltiples errores?")
+    print("   R// Guardándolos en una lista o log para revisarlos al final.")
+    print("3. ¿Qué pasa si TODOS los elementos fallan?")
+    print("   R// Se debe informar que no se procesó ninguno correctamente.")
+    
+    esperar_enter()
+
+# ===========================================================================
+# Menú Principal
+# ===========================================================================
+def menu_principal():
+    while True:
+        limpiar_pantalla()
+        imprimir_encabezado_seccion("EJEMPLOS CONFUSOS DE MANEJO DE EXCEPCIONES (RESPONDIDO)")
+        print("Selecciona un problema para explorar:\n")
+        print("1. Except desnudo")
+        print("2. Capturar demasiado ampliamente")
+        print("3. Ignorar errores silenciosamente")
+        print("4. Confusión con else y finally")
+        print("5. Uso incorrecto de raise")
+        print("6. No re-lanzar apropiadamente")
+        print("7. Excepciones en bucles")
+        print("\n0. Salir")
+        
+        opcion = input("\nElige una opción (0-7): ")
+        if opcion == '0':
+            break
+        elif opcion == '1':
+            problema_bare_except()
+        elif opcion == '2':
+            problema_except_amplio()
+        elif opcion == '3':
+            problema_ignorar_errores()
+        elif opcion == '4':
+            problema_else_finally()
+        elif opcion == '5':
+            problema_raise_incorrecto()
+        elif opcion == '6':
+            problema_no_relanzar()
+        elif opcion == '7':
+            problema_excepciones_en_bucles()
+
+if _name_ == "_main_":
+    menu_principal()
